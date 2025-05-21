@@ -12,16 +12,22 @@ class User {
     required this.username,
     required this.email,
     required this.password,
-    this.role = "user",
+    this.role = "User",
   });
 
-  User copy({int? id, String? username, String? email, String? password, String? role}) {
+  User copy({
+    int? id,
+    String? username,
+    String? email,
+    String? password,
+    String? role,
+  }) {
     return User(
       id: id ?? this.id,
       username: username ?? this.username,
       email: email ?? this.email,
       password: password ?? this.password,
-      role: role?? this.role,
+      role: role ?? this.role,
     );
   }
 

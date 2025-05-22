@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:mob_novelapp/ui/home/home_screen.dart';
+import 'package:mob_novelapp/ui/login/login_screen.dart';
 
 class Navigation {
   static const initial = "/login";
@@ -7,13 +8,13 @@ class Navigation {
     GoRoute(
       path: "/",
       name: Screen.home.name,
-      // builder: (context, state) => const HomeScreen(),
+      builder: (context, state) => const HomeScreen(),
     ),
     GoRoute(
-      path:'/login',
-      name:Screen.login.name,
-      // builder: (context, state) => const LoginScreen(),
-     ),
+      path: '/login',
+      name: Screen.login.name,
+      builder: (context, state) => const LoginScreen(),
+    ),
   ];
 }
 

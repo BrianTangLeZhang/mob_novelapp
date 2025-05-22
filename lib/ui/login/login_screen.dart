@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mob_novelapp/nav/navigation.dart';
+import 'package:mob_novelapp/secret.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,16 +33,26 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final res = await supabase.auth.signInWithPassword(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+    try {
+      final res = await supabase.auth.signInWithPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
-    if (res.user != null) {
-      _snackbar('Logged in successfully');
-    } else {
-      _snackbar('Login failed');
+      if (res.user != null) {
+        _snackbar('Logged in successfully');
+        if (mounted) {
+          context.pushReplacementNamed(Screen.home.name);
+        }
+      }
+    } catch (e) {
+      _snackbar('Login failed: ${_formatError(e)}');
     }
+  }
+
+  String _formatError(Object e) {
+    if (e is AuthException) return e.message;
+    return 'Unexpected error';
   }
 
   void _signUp() async {
@@ -102,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               'username':
                   user.userMetadata?['full_name'] ?? user.email!.split('@')[0],
               'email': user.email,
-              'role': 'user',
+              'role': 'User',
             });
           }
           if (mounted) {
@@ -114,8 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<AuthResponse> _googleSignIn() async {
-    const clientId =
-        "686459249620-e3f0cvj9pj2e6samtun9elg4pomu6030.apps.googleusercontent.com";
+    const clientId = storedClientId;
     final signInOption = GoogleSignIn(serverClientId: clientId);
     final googleUser = await signInOption.signIn();
 
@@ -154,66 +164,162 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Novel World",
-                style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 60.0),
-              Text(
-                signUp ? 'Sign Up' : 'Login',
-                style: TextStyle(fontSize: 24.0),
-              ),
-              if (signUp)
-                TextField(
-                  controller: _usernameController,
-                  decoration: InputDecoration(labelText: 'Username'),
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 40.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 50,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Novel',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'World',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 50),
+                    Text(
+                      signUp ? 'Sign Up' : 'Login',
+                      style: TextStyle(
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    if (signUp)
+                      TextField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.black,
+                              width: 2.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (signUp) SizedBox(height: 12),
+
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.black,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.black,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      obscureText: true,
+                    ),
+                    SizedBox(height: 12),
+
+                    if (signUp)
+                      TextField(
+                        controller: _confirmPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.black,
+                              width: 2.0,
+                            ),
+                          ),
+                        ),
+                        obscureText: true,
+                      ),
+                    SizedBox(height: 20),
+
+                    FilledButton(
+                      onPressed: signUp ? _signUp : _login,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.black,
+                      ),
+                      child: Text(signUp ? 'Sign Up' : 'Login'),
+                    ),
+
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          signUp = !signUp;
+                        });
+                      },
+                      child: Text(
+                        signUp
+                            ? 'Already have an account? Login'
+                            : 'Don\'t have an account? Sign Up',
+                      ),
+                    ),
+
+                    Divider(height: 20),
+
+                    FilledButton.icon(
+                      onPressed: _googleSignIn,
+                      icon: FaIcon(FontAwesomeIcons.google),
+                      label: Text("Sign in with Google"),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
               ),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
-              ),
-              if (signUp)
-                TextField(
-                  controller: _confirmPasswordController,
-                  decoration: InputDecoration(labelText: 'Confirm Password'),
-                  obscureText: true,
-                ),
-              SizedBox(height: 20),
-              FilledButton(
-                onPressed: signUp ? _signUp : _login,
-                child: Text(signUp ? 'Sign Up' : 'Login'),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    signUp = !signUp;
-                  });
-                },
-                child: Text(
-                  signUp
-                      ? 'Already have an account? Login'
-                      : 'Don\'t have an account? Sign Up',
-                ),
-              ),
-              Divider(),
-              FilledButton.icon(
-                onPressed: _googleSignIn,
-                icon: FaIcon(FontAwesomeIcons.google),
-                label: Text("Sign in with Google"),
-              ),
-            ],
-          ),
+            ),
+
+            Positioned(top: 50, left: 0, right: 0, child: Center()),
+          ],
         ),
       ),
     );

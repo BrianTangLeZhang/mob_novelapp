@@ -1,13 +1,13 @@
-class User {
+class Profile {
   int? id;
   final String username;
   final String email;
   final String password;
   final String role;
 
-  static const name = "users";
+  static const name = "profiles";
 
-  User({
+  Profile({
     this.id,
     required this.username,
     required this.email,
@@ -15,14 +15,14 @@ class User {
     this.role = "User",
   });
 
-  User copy({
+  Profile copy({
     int? id,
     String? username,
     String? email,
     String? password,
     String? role,
   }) {
-    return User(
+    return Profile(
       id: id ?? this.id,
       username: username ?? this.username,
       email: email ?? this.email,
@@ -46,8 +46,8 @@ class User {
     return 'User(id: $id, username: $username, email: $email, password: $password, role: $role)';
   }
 
-  static User fromMap(Map<String, dynamic> map) {
-    return User(
+  static Profile fromMap(Map<String, dynamic> map) {
+    return Profile(
       id: map['id'],
       username: map['username'],
       email: map['email'],

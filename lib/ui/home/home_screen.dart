@@ -19,6 +19,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: SafeArea(child: ListView()));
+    return Scaffold(body: SafeArea(child: Text("home screen")));
   }
 }

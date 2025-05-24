@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mob_novelapp/nav/navigation.dart';
+import 'package:mob_novelapp/providers/auth_provider.dart';
 import 'package:mob_novelapp/secret.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,7 +12,30 @@ void main() async {
     url: 'https://ypptdpalkjuinxlnpcxy.supabase.co',
     anonKey: anon,
   );
-  runApp(const MyApp());
+
+  final currentSession = Supabase.instance.client.auth.currentSession;
+  final currentUser = currentSession?.user;
+
+  if (currentUser != null) {
+    final profile =
+        await Supabase.instance.client
+            .from('profiles')
+            .select()
+            .eq('id', currentUser.id)
+            .maybeSingle();
+
+    runApp(
+      ProviderScope(
+        overrides: [
+          authUserProvider.overrideWith((ref) => currentUser),
+          userProfileProvider.overrideWith((ref) => profile),
+        ],
+        child: MyApp(),
+      ),
+    );
+  } else {
+    runApp(const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {

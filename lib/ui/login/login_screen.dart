@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mob_novelapp/data/model/profile.dart';
 import 'package:mob_novelapp/nav/navigation.dart';
+import 'package:mob_novelapp/providers/auth_provider.dart';
 import 'package:mob_novelapp/secret.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   static final supabase = Supabase.instance.client;
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -39,7 +42,11 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
-      if (res.user != null) {
+      final user = res.user;
+
+      if (user != null) {
+        _storeDataToProvider(user);
+
         _snackbar('Logged in successfully');
         if (mounted) {
           context.pushReplacementNamed(Screen.home.name);
@@ -69,30 +76,61 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final res = await supabase.auth.signUp(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+    final checkExisting =
+        await supabase
+            .from("profiles")
+            .select()
+            .eq("email", _emailController.text)
+            .maybeSingle();
 
-    final user = res.user;
-    if (user != null) {
-      await supabase.from('profiles').insert({
-        'id': user.id,
-        'username': _usernameController.text,
-        'email': user.email,
-        'role': 'User',
-      });
-
-      _snackbar('Signed up successfully');
-      setState(() {
-        signUp = false;
-        _usernameController.clear();
-        _emailController.clear();
-        _passwordController.clear();
-      });
-    } else if (res.session == null && res.user == null) {
-      _snackbar('Sign up failed');
+    if (checkExisting != null) {
+      _snackbar('Email already exists.');
+      return;
     }
+
+    try {
+      final res = await supabase.auth.signUp(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      final user = res.user;
+      if (user != null) {
+        await supabase.from('profiles').insert({
+          'id': user.id,
+          'username': _usernameController.text,
+          'email': user.email,
+          'role': 'User',
+        });
+
+        _snackbar('Signed up successfully');
+        setState(() {
+          signUp = false;
+          _usernameController.clear();
+          _emailController.clear();
+          _passwordController.clear();
+        });
+      } else if (res.session == null && res.user == null) {
+        _snackbar('Sign up failed');
+      }
+    } catch (e) {
+      _snackbar('Sign up failed: ${_formatError(e)}');
+    }
+  }
+
+  void _storeDataToProvider(User user) async {
+    final profile =
+        await supabase
+            .from('profiles')
+            .select()
+            .eq('id', user.id)
+            .maybeSingle();
+
+    debugPrint(user.toString());
+    debugPrint(profile.toString());
+
+    ref.read(authUserProvider.notifier).state = user;
+    ref.read(userProfileProvider.notifier).state = profile;
   }
 
   void _setupAuthListener() {
@@ -131,23 +169,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (googleUser == null) {
       _snackbar("Google sign in cancelled.");
+      return AuthResponse();
     }
 
-    final googleAuth = await googleUser!.authentication;
+    final googleAuth = await googleUser.authentication;
     final accessToken = googleAuth.accessToken;
     final idToken = googleAuth.idToken;
 
     if (idToken == null || accessToken == null) {
       _snackbar("Google authentication failed.");
+      return AuthResponse();
     }
 
     final res = await supabase.auth.signInWithIdToken(
       provider: OAuthProvider.google,
-      idToken: idToken!,
+      idToken: idToken,
       accessToken: accessToken,
     );
 
-    if (res.user != null) {
+    final user = res.user;
+    if (user != null) {
+      _storeDataToProvider(user);
+
       _snackbar("Google sign in successful");
     } else {
       _snackbar("Google sign in failed");

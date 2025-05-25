@@ -1,9 +1,11 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mob_novelapp/data/model/novel.dart';
 import 'package:mob_novelapp/data/repo/novel_repo.dart';
+import 'package:mob_novelapp/nav/navigation.dart';
 import 'package:mob_novelapp/service/storage_service.dart';
+import 'package:mob_novelapp/ui/drawer/drawer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,14 +16,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final repo = NovelRepoSupabase();
-  var novels = <Novel>[];
   final storageService = StorageService();
-  Uint8List? bytes;
+  var novels = <Novel>[];
 
   @override
   void initState() {
-    _refresh();
     super.initState();
+    _refresh();
   }
 
   void _refresh() async {
@@ -32,30 +33,99 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToNovel(Novel novel) {
-    return;
+    // TODO: Redirect to the novel page
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
+      title: 'Home',
       body: SafeArea(
-        child: ListView.builder(
-          itemCount: novels.length,
-          itemBuilder:
-              (context, index) => NovelItem(
-                novel: novels[index],
-                onClickItem: (novel) => _navigateToNovel(novel),
-                storageService: storageService,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  labelText: 'Search novels',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  prefixIcon: Icon(Icons.search),
+                ),
               ),
+            ),
+            Expanded(
+              child: GridView.count(
+                padding: const EdgeInsets.all(8),
+                crossAxisCount: 2,
+                childAspectRatio: 0.6,
+                children:
+                    novels.map((novel) {
+                      return Card(
+                        child: GestureDetector(
+                          onTap: () => _navigateToNovel(novel),
+                          child: Column(
+                            children: [
+                              FutureBuilder<Uint8List?>(
+                                future: storageService.getImage(novel.cover),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const SizedBox(
+                                      height: 180,
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  } else if (snapshot.hasData &&
+                                      snapshot.data != null) {
+                                    return Image.memory(
+                                      snapshot.data!,
+                                      height: 180,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    );
+                                  } else {
+                                    return const SizedBox(
+                                      height: 180,
+                                      child: Center(
+                                        child: Icon(Icons.image_not_supported),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  novel.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+          ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.pushNamed(Screen.addNovel.name),
+        backgroundColor: Colors.black,
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 }
 
-class NovelItem extends StatefulWidget {
-  const NovelItem({
-    super.key,
+class _NovelItem extends StatefulWidget {
+  const _NovelItem({
     required this.novel,
     required this.onClickItem,
     this.storageService,
@@ -66,10 +136,10 @@ class NovelItem extends StatefulWidget {
   final StorageService? storageService;
 
   @override
-  State<NovelItem> createState() => _NovelItemState();
+  State<_NovelItem> createState() => _NovelItemState();
 }
 
-class _NovelItemState extends State<NovelItem> {
+class _NovelItemState extends State<_NovelItem> {
   Uint8List? bytes;
 
   @override
@@ -91,28 +161,35 @@ class _NovelItemState extends State<NovelItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(10),
-      child: GestureDetector(
-        onTap: () => widget.onClickItem(widget.novel),
+    return GestureDetector(
+      onTap: () => widget.onClickItem(widget.novel),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                if (bytes != null)
-                  Image.memory(
-                    bytes!,
-                    height: 300.0,
-                    width: 150.0,
-                    fit: BoxFit.cover,
-                  ),
-                if (bytes == null)
-                  const SizedBox(
-                    height: 300.0,
-                    width: 150.0,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-              ],
+            if (bytes != null)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: Image.memory(bytes!, height: 180, fit: BoxFit.cover),
+              )
+            else
+              const SizedBox(
+                height: 180,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                widget.novel.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),

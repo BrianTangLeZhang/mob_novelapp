@@ -9,7 +9,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 初始化Supabase
   await Supabase.initialize(
     url: 'https://ypptdpalkjuinxlnpcxy.supabase.co',
     anonKey: anon,
@@ -51,10 +50,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      routerConfig: GoRouter(
-        initialLocation: Navigation.initial,
-        routes: Navigation.routes,
-      ),
+      routerConfig: Navigation.router,
     );
   }
 }

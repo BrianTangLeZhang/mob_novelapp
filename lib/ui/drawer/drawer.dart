@@ -22,11 +22,12 @@ class AppScaffold extends ConsumerWidget {
 
     void navigateTo(String page) {
       context.pop();
-      context.pushReplacementNamed(page);
+      context.pushNamed(page);
     }
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: true,
         title: Text(title, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),

@@ -27,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _refresh() async {
     final res = await repo.getAllNovels();
+    debugPrint(res.toString());
+    debugPrint("**************\n**********");
     setState(() {
       novels = res;
     });
@@ -43,16 +45,20 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            Text(
+              "Novels",
+              style: (TextStyle(fontSize: 25)),
+              textAlign: TextAlign.center,
+            ),
+            Divider(),
             Expanded(
               child: GridView.count(
-                padding: const EdgeInsets.all(8),
                 crossAxisCount: 2,
                 childAspectRatio: 0.6,
                 children:
                     novels.map((novel) {
-                      return NovelItem(
-                        novel: novel,
-                        onClickItem: _navigateToNovel,
+                      return Column(
+                        children: [Text(novel.title), Text(novel.description)],
                       );
                     }).toList(),
               ),
@@ -61,7 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.pushNamed(Screen.addNovel.name),
+        onPressed: () async {
+          final res = await context.pushNamed(Screen.addNovel.name);
+          if (res == true) {
+            _refresh();
+          }
+        },
         backgroundColor: Colors.black,
         child: const Icon(Icons.add, color: Colors.white),
       ),

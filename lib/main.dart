@@ -8,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 初始化Supabase
   await Supabase.initialize(
     url: 'https://ypptdpalkjuinxlnpcxy.supabase.co',
     anonKey: anon,
@@ -30,18 +32,17 @@ void main() async {
           authUserProvider.overrideWith((ref) => currentUser),
           userProfileProvider.overrideWith((ref) => profile),
         ],
-        child: MyApp(),
+        child: const MyApp(),
       ),
     );
   } else {
-    runApp(const MyApp());
+    runApp(const ProviderScope(child: MyApp()));
   }
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(

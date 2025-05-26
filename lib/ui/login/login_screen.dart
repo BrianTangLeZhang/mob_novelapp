@@ -125,6 +125,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             .eq('id', user.id)
             .maybeSingle();
 
+    debugPrint(user.toString());
+    debugPrint(profile.toString());
+
     ref.read(authUserProvider.notifier).state = user;
     ref.read(userProfileProvider.notifier).state = profile;
   }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:mob_novelapp/data/model/profile.dart';
 import 'package:mob_novelapp/nav/navigation.dart';
 import 'package:mob_novelapp/providers/auth_provider.dart';
 import 'package:mob_novelapp/secret.dart';

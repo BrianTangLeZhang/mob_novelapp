@@ -18,18 +18,45 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authUserProvider);
     final profile = ref.watch(userProfileProvider);
 
+    void navigateTo(String page) {
+      context.pop();
+      context.pushReplacementNamed(page);
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       drawer: Drawer(
+        width: 200,
+        backgroundColor: Colors.grey[900],
         child: ListView(
           children: [
-            const DrawerHeader(child: Text("Navigation")),
+            DrawerHeader(
+              child: Center(
+                child: Text(
+                  profile != null
+                      ? "Current User: ${profile['username']}"
+                      : "User not logged in",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
             ListTile(
-              title: const Text('Home'),
-              onTap: () => context.pushReplacementNamed(Screen.home.name),
+              title: Text(
+                'Home',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              onTap: () => navigateTo(Screen.home.name),
             ),
           ],
         ),

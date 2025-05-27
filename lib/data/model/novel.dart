@@ -1,5 +1,5 @@
 class Novel {
-  int? id;
+  String? id;
   final String title;
   final String description;
   final String cover;
@@ -16,7 +16,7 @@ class Novel {
   });
 
   Novel copy({
-    int? id,
+    String? id,
     String? title,
     String? description,
     String? cover,

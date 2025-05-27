@@ -21,6 +21,11 @@ class ChapterRepoSupabase {
     return Chapter.fromMap(res);
   }
 
+  Future<List<Chapter>> getChapterByNovelId(String id) async {
+    final res = await supabase.from("chapters").select().eq('novel_id', id);
+    return res.map((data) => Chapter.fromMap(data)).toList();
+  }
+
   Future<List<Chapter>> getAllChapters() async {
     final res = await supabase
         .from("chapters")

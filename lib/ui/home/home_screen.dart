@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final repo = NovelRepoSupabase();
   final storageService = StorageService();
   var novels = <Novel>[];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -26,16 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _refresh() async {
+    setState(() => isLoading = true);
     final res = await repo.getAllNovels();
-    debugPrint(res.toString());
-    debugPrint("**************\n**********");
+    debugPrint(
+      '=========================Fetched novels: $res ======================================',
+    );
     setState(() {
       novels = res;
+      isLoading = false;
     });
   }
 
-  void _navigateToNovel(Novel novel) {
-    // TODO: Redirect to the novel page
+  void _navigateToNovel(String? id) {
+    context.pushNamed(Screen.detailNovel.name, pathParameters: {"id": id!});
   }
 
   @override
@@ -45,22 +49,36 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Text(
-              "Novels",
-              style: (TextStyle(fontSize: 25)),
-              textAlign: TextAlign.center,
-            ),
-            Divider(),
             Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                childAspectRatio: 0.6,
-                children:
-                    novels.map((novel) {
-                      return Column(
-                        children: [Text(novel.title), Text(novel.description)],
-                      );
-                    }).toList(),
+              child: Builder(
+                builder: (_) {
+                  if (isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (novels.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No Novels Added Yet",
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    );
+                  } else {
+                    return GridView.count(
+                      padding: const EdgeInsets.all(8),
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.56,
+                      children:
+                          novels
+                              .map(
+                                (novel) => NovelItem(
+                                  novel: novel,
+                                  onClickItem:
+                                      (_) => _navigateToNovel(novel.id),
+                                ),
+                              )
+                              .toList(),
+                    );
+                  }
+                },
               ),
             ),
           ],
@@ -69,9 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final res = await context.pushNamed(Screen.addNovel.name);
-          if (res == true) {
-            _refresh();
-          }
+          if (res == true) _refresh();
         },
         backgroundColor: Colors.black,
         child: const Icon(Icons.add, color: Colors.white),

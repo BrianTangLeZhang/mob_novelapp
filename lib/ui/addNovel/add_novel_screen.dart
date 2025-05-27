@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +11,6 @@ import 'package:mob_novelapp/data/repo/novel_repo.dart';
 import 'package:mob_novelapp/providers/auth_provider.dart';
 import 'package:mob_novelapp/service/storage_service.dart';
 import 'package:mob_novelapp/ui/drawer/drawer.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddNovelScreen extends ConsumerStatefulWidget {
   const AddNovelScreen({super.key});
@@ -197,14 +195,10 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
 
       await storageService.uploadImage(fileName, imageToUpload);
 
-      final imageUrl = Supabase.instance.client.storage
-          .from("images")
-          .getPublicUrl(fileName);
-
       final novel = Novel(
         title: title,
         description: description,
-        cover: imageUrl,
+        cover: fileName,
         user_id: userId!,
       );
 

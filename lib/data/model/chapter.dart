@@ -1,33 +1,33 @@
 class Chapter {
   int? id;
-  final int novel;
+  final String novel_id;
   final int index;
-  final String name;
+  final String title;
   final String content;
   final List<String>? images;
 
   Chapter({
     this.id,
-    required this.novel,
+    required this.novel_id,
     required this.index,
-    required this.name,
+    required this.title,
     required this.content,
     this.images,
   });
 
   Chapter copy({
     int? id,
-    int? novel,
+    String? novel_id,
     int? index,
-    String? name,
+    String? title,
     String? content,
     List<String>? images,
   }) {
     return Chapter(
       id: id ?? this.id,
-      novel: novel ?? this.novel,
+      novel_id: novel_id ?? this.novel_id,
       index: index ?? this.index,
-      name: name ?? this.name,
+      title: title ?? this.title,
       content: content ?? this.content,
       images: images,
     );
@@ -36,8 +36,8 @@ class Chapter {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'novel': novel,
-      'name': name,
+      'novel_id': novel_id,
+      'title': title,
       'content': content,
       'images': images,
     };
@@ -45,15 +45,15 @@ class Chapter {
 
   @override
   String toString() {
-    return 'Chapter{id: $id, novel: $novel, index: $index, name: $name, content: $content, images: $images';
+    return 'Chapter{id: $id, novel_id: $novel_id, index: $index, title: $title, content: $content, images: $images';
   }
 
   static Chapter fromMap(Map<String, dynamic> map) {
     return Chapter(
       id: map['id'],
-      novel: map['novel'],
+      novel_id: map['novel_id'],
       index: map["index"],
-      name: map['name'],
+      title: map['title'],
       content: map['content'],
       images: map['images'],
     );

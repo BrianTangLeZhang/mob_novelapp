@@ -40,26 +40,40 @@ class NovelItemState extends State<NovelItem> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (bytes != null)
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: Image.memory(bytes!, height: 180, fit: BoxFit.cover),
-              )
-            else
-              const SizedBox(
-                height: 180,
-                child: Center(child: CircularProgressIndicator()),
-              ),
+            AspectRatio(
+              aspectRatio: 1 / 1.6,
+              child:
+                  bytes != null
+                      ? Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: MemoryImage(bytes!),
+                            fit: BoxFit.contain,
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          color: Colors.white,
+                        ),
+                      )
+                      : Container(
+                        color: Colors.grey[300],
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+            ),
+
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                widget.novel.title,
-                maxLines: 2,
+                widget.novel.title.length > 10
+                    ? '${widget.novel.title.substring(0, 10)}...'
+                    : widget.novel.title,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

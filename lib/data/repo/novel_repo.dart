@@ -16,7 +16,7 @@ class NovelRepoSupabase {
     await supabase.from('novels').insert(novel.toMap());
   }
 
-  Future<Novel?> getNovelById(int id) async {
+  Future<Novel?> getNovelById(String id) async {
     final res = await supabase.from("novels").select().eq('id', id).single();
     return Novel.fromMap(res);
   }

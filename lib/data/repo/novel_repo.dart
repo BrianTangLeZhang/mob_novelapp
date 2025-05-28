@@ -33,7 +33,7 @@ class NovelRepoSupabase {
     await supabase.from("novels").update(novel.toMap()).eq('id', novel.id!);
   }
 
-  Future<void> deleteNovel(int id) async {
+  Future<void> deleteNovel(String id) async {
     await supabase.from("novels").delete().eq('id', id);
   }
 }

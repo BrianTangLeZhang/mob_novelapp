@@ -8,33 +8,37 @@ import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:mob_novelapp/data/model/novel.dart';
 import 'package:mob_novelapp/data/repo/novel_repo.dart';
-import 'package:mob_novelapp/providers/auth_provider.dart';
 import 'package:mob_novelapp/service/storage_service.dart';
 import 'package:mob_novelapp/ui/drawer/drawer.dart';
 
-class AddNovelScreen extends ConsumerStatefulWidget {
-  const AddNovelScreen({super.key});
+class EditNovelScreen extends ConsumerStatefulWidget {
+  const EditNovelScreen({super.key, required this.id});
+
+  final String id;
 
   @override
-  ConsumerState<AddNovelScreen> createState() => _AddNovelScreenState();
+  ConsumerState<EditNovelScreen> createState() => _EditNovelScreenState();
 }
 
-class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
+class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
   final repo = NovelRepoSupabase();
   final storageService = StorageService();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  Novel? novel;
   int titleCounter = 0;
   int descriptionCounter = 0;
   List<Uint8List> defaultCoverBytesList = [];
   List<String> defaultCovers = [];
-  int? selectedDefaultCoverIndex = 0;
+  int? selectedDefaultCoverIndex;
   File? selectedFile;
   Uint8List? bytes;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _loadNovel();
     _loadAssets();
 
     _titleController.addListener(() {
@@ -47,6 +51,19 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
       setState(() {
         descriptionCounter = _descriptionController.text.trim().length;
       });
+    });
+  }
+
+  void _loadNovel() async {
+    setState(() => isLoading = true);
+    final res = await repo.getNovelById(widget.id);
+    final imageBytes = await storageService.getImage(res!.cover);
+    setState(() {
+      novel = res;
+      bytes = imageBytes;
+      _titleController.text = novel!.title;
+      _descriptionController.text = novel!.description;
+      isLoading = false;
     });
   }
 
@@ -86,7 +103,7 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
         fit: BoxFit.cover,
       );
     } else {
-      return const Icon(Icons.image, size: 50);
+      return const Center(child: CircularProgressIndicator());
     }
   }
 
@@ -182,7 +199,7 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
     }
   }
 
-  void _submit(String? userId, String? username) async {
+  void _submit() async {
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
 
@@ -207,29 +224,32 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
     }
 
     try {
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = "cover_$timestamp.jpg";
+      String newCoverName = novel!.cover;
 
-      Uint8List imageToUpload;
-      if (bytes != null) {
-        imageToUpload = bytes!;
-      } else {
-        imageToUpload = defaultCoverBytesList[selectedDefaultCoverIndex!];
+      final isCoverUpdated = bytes != null || selectedDefaultCoverIndex != null;
+
+      if (isCoverUpdated) {
+        await storageService.deleteImage(novel!.cover);
+
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        newCoverName = "cover_$timestamp.jpg";
+
+        Uint8List imageToUpload =
+            bytes ?? defaultCoverBytesList[selectedDefaultCoverIndex!];
+
+        await storageService.uploadImage(newCoverName, imageToUpload);
       }
 
-      await storageService.uploadImage(fileName, imageToUpload);
-
-      final novel = Novel(
+      final updatedNovel = novel!.copy(
+        id: widget.id,
         title: title,
         description: description,
-        cover: fileName,
-        user_id: userId!,
-        author: username!,
+        cover: newCoverName,
       );
 
-      await repo.addNovel(novel);
+      await repo.updateNovel(updatedNovel);
 
-      _snackbar("Novel added successfully.");
+      _snackbar("Novel updated successfully.");
       if (mounted) {
         context.pop(true);
       }
@@ -244,9 +264,8 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(userProfileProvider);
     return AppScaffold(
-      title: "New Novel",
+      title: "Edit Novel",
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -269,6 +288,7 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
                 TextField(
                   controller: _titleController,
                   decoration: const InputDecoration(
@@ -292,6 +312,7 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
                 TextField(
                   controller: _descriptionController,
                   maxLines: 5,
+                  textAlign: TextAlign.start,
                   decoration: const InputDecoration(
                     labelText: 'Description',
                     border: OutlineInputBorder(),
@@ -312,14 +333,12 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 Center(
                   child: MaterialButton(
-                    onPressed:
-                        () => _submit(profile!["id"], profile["username"]),
+                    onPressed: _submit,
                     color: Colors.black,
                     child: const Text(
-                      'Add',
+                      'Save',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

@@ -28,4 +28,13 @@ class StorageService {
     }
     return res.bodyBytes;
   }
+
+  Future<void> deleteImage(String fileName) async {
+    final res = await supabase.storage.from('images').remove([fileName]);
+    if (res.isNotEmpty) {
+      debugPrint("Failed to delete image: $res");
+    } else {
+      debugPrint("Image deleted successfully");
+    }
+  }
 }

@@ -25,43 +25,71 @@ class AppScaffold extends ConsumerWidget {
       context.pushNamed(page);
     }
 
+    final currentRouteName = ModalRoute.of(context)?.settings.name;
+    final isHome = currentRouteName == Screen.home.name;
+
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
+        automaticallyImplyLeading: false,
         title: Text(title, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      drawer: Drawer(
-        width: 200,
-        backgroundColor: Colors.grey[900],
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Center(
-                child: Text(
-                  profile != null
-                      ? "Current User: ${profile['username']}"
-                      : "User not logged in",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+        leading:
+            isHome
+                ? Builder(
+                  builder:
+                      (context) => IconButton(
+                        icon: const Icon(Icons.menu),
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                      ),
+                )
+                : IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => context.pop(),
                 ),
-              ),
+        actions: [
+          if (isHome)
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                // context.pushNamed('search');
+              },
             ),
-            ListTile(
-              title: Text(
-                'Home',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              onTap: () => navigateTo(Screen.home.name),
-            ),
-          ],
-        ),
+        ],
       ),
+      drawer:
+          isHome
+              ? Drawer(
+                width: 200,
+                backgroundColor: Colors.grey[900],
+                child: ListView(
+                  children: [
+                    DrawerHeader(
+                      child: Center(
+                        child: Text(
+                          profile != null
+                              ? "Current User: ${profile['username']}"
+                              : "User not logged in",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      title: const Text(
+                        'Home',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                      onTap: () => navigateTo(Screen.home.name),
+                    ),
+                  ],
+                ),
+              )
+              : null,
       body: body,
       floatingActionButton: floatingActionButton,
     );

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mob_novelapp/ui/addNovel/add_novel_screen.dart';
 import 'package:mob_novelapp/ui/authGate/auth_gate.dart';
 import 'package:mob_novelapp/ui/detailNovel/details_novel.dart';
+import 'package:mob_novelapp/ui/editNovel/edit_novel_screen.dart';
 import 'package:mob_novelapp/ui/home/home_screen.dart';
 import 'package:mob_novelapp/ui/login/login_screen.dart';
 
@@ -36,6 +37,13 @@ class Navigation {
         builder:
             (context, state) =>
                 DetailsNovelScreen(id: state.pathParameters["id"]!),
+      ),
+      GoRoute(
+        path: "/updateNovel/:id",
+        name: Screen.updateNovel.name,
+        builder:
+            (context, state) =>
+                EditNovelScreen(id: state.pathParameters["id"]!),
       ),
     ],
   );

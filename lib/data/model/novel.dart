@@ -4,6 +4,7 @@ class Novel {
   final String description;
   final String cover;
   final String user_id;
+  final String author;
 
   static const name = "novels";
 
@@ -13,6 +14,7 @@ class Novel {
     required this.description,
     this.cover = "",
     required this.user_id,
+    required this.author,
   });
 
   Novel copy({
@@ -21,6 +23,7 @@ class Novel {
     String? description,
     String? cover,
     String? user_id,
+    String? author,
   }) {
     return Novel(
       id: id ?? this.id,
@@ -28,6 +31,7 @@ class Novel {
       description: description ?? this.description,
       cover: cover ?? this.cover,
       user_id: user_id ?? this.user_id,
+      author: author ?? this.author,
     );
   }
 
@@ -38,12 +42,13 @@ class Novel {
       "description": description,
       'cover': cover,
       "user_id": user_id,
+      "author": author,
     };
   }
 
   @override
   String toString() {
-    return 'Novel{$id, $title, $description, $cover, $user_id}';
+    return 'Novel{$id, $title, $description, $cover, $user_id, $author}';
   }
 
   // convert data from map to Novel object
@@ -54,6 +59,7 @@ class Novel {
       description: map['description'],
       cover: map['cover'],
       user_id: map['user_id'],
+      author: map['author'],
     );
   }
 }

@@ -29,9 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _refresh() async {
     setState(() => isLoading = true);
     final res = await repo.getAllNovels();
-    debugPrint(
-      '=========================Fetched novels: $res ======================================',
-    );
     setState(() {
       novels = res;
       isLoading = false;

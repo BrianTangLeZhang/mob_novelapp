@@ -27,10 +27,11 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
   final storageService = StorageService();
 
   Novel? novel;
-  List<Chapter>? chapters;
+  List<Chapter?> chapters = [];
   Uint8List? bytes;
   bool isLoading = true;
   bool chaptersLoading = true;
+  bool isAuthorOrAdmin = false;
 
   @override
   void initState() {
@@ -59,16 +60,30 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
     });
   }
 
+  void _snackbar(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = ref.read(userProfileProvider);
+    final isAuthorOrAdmin =
+        profile!["role"] == "Admin" || novel?.user_id == profile["id"];
     return AppScaffold(
+      resizeToAvoidBottomInset: false,
+      actions: [],
       title: novel?.title ?? "Novel Details",
       floatingActionButton:
-          novel?.user_id == profile!["id"]
+          isAuthorOrAdmin
               ? FloatingActionButton(
-                onPressed: () {
-                  // TODO: Add Chapter
+                onPressed: () async {
+                  final res = await context.pushNamed(
+                    Screen.addChapter.name,
+                    pathParameters: {"novelId": novel!.id!},
+                  );
+                  if (res == true) {
+                    _loadChapters();
+                  }
                 },
                 backgroundColor: Colors.black,
                 child: const Icon(Icons.add, color: Colors.white),
@@ -118,6 +133,7 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                 maxLines: 5,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 10),
                             ],
                           ),
                         ),
@@ -161,17 +177,11 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                       ),
                                       actions: [
                                         TextButton(
-                                          onPressed:
-                                              () => Navigator.of(
-                                                context,
-                                              ).pop(false),
+                                          onPressed: () => context.pop(false),
                                           child: const Text("Cancel"),
                                         ),
                                         TextButton(
-                                          onPressed:
-                                              () => Navigator.of(
-                                                context,
-                                              ).pop(true),
+                                          onPressed: () => context.pop(true),
                                           child: const Text("Delete"),
                                         ),
                                       ],
@@ -181,6 +191,7 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                               if (res == true) {
                                 await storageService.deleteImage(novel!.cover);
                                 await repo.deleteNovel(novel!.id!);
+                                _snackbar("Novel deleted");
                                 context.pushNamed(Screen.home.name);
                               }
                             },
@@ -204,23 +215,66 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                       child:
                           chaptersLoading
                               ? const Center(child: CircularProgressIndicator())
-                              : (chapters == null || chapters!.isEmpty)
+                              : chapters.isEmpty
                               ? const Center(
-                                child: Text(
-                                  "No chapters added yet.",
-                                  style: TextStyle(color: Colors.grey),
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: 30),
+                                    Text(
+                                      "No chapters added yet.",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                               )
                               : ListView.separated(
-                                itemCount: chapters!.length,
+                                itemCount: chapters.length,
                                 separatorBuilder: (_, __) => const Divider(),
                                 itemBuilder: (context, index) {
-                                  final chapter = chapters![index];
-                                  return ListTile(
-                                    title: Text(chapter.title),
-                                    onTap: () {
-                                      // TODO: Navigate to chapter details
-                                    },
+                                  final chapter = chapters[index];
+                                  return Container(
+                                    color: Colors.amber[50],
+                                    child: ListTile(
+                                      title: Text(chapter!.title),
+                                      onTap: () {
+                                        // TODO: Navigate to chapter details
+                                      },
+                                      onLongPress: () async {
+                                        if (isAuthorOrAdmin) {
+                                          final res = await showDialog<bool>(
+                                            context: context,
+                                            builder:
+                                                (context) => AlertDialog(
+                                                  title: const Text(
+                                                    "Delete Chapter",
+                                                  ),
+                                                  content: const Text(
+                                                    "Are you sure you want to delete this novel?",
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed:
+                                                          () => context.pop(
+                                                            false,
+                                                          ),
+                                                      child: const Text(
+                                                        "Cancel",
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed:
+                                                          () =>
+                                                              context.pop(true),
+                                                      child: const Text(
+                                                        "Delete",
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                          );
+                                        }
+                                      },
+                                    ),
                                   );
                                 },
                               ),

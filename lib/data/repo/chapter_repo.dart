@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:mob_novelapp/data/model/chapter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,6 +14,7 @@ class ChapterRepoSupabase {
   final supabase = Supabase.instance.client;
 
   Future<void> addChapter(Chapter chapter) async {
+    debugPrint(chapter.toMap().toString());
     await supabase.from('chapters').insert(chapter.toMap());
   }
 
@@ -21,8 +23,9 @@ class ChapterRepoSupabase {
     return Chapter.fromMap(res);
   }
 
-  Future<List<Chapter>> getChapterByNovelId(String id) async {
+  Future<List<Chapter?>> getChapterByNovelId(String id) async {
     final res = await supabase.from("chapters").select().eq('novel_id', id);
+    if (res.isEmpty) return [];
     return res.map((data) => Chapter.fromMap(data)).toList();
   }
 

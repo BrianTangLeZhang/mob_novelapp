@@ -30,7 +30,9 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
   List<String> defaultCovers = [];
   int? selectedDefaultCoverIndex = 0;
   File? selectedFile;
+  String? imageName;
   Uint8List? bytes;
+  final List<Uint8List> bytesList = [];
 
   @override
   void initState() {
@@ -64,7 +66,6 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
             )
             .toList();
 
-    final List<Uint8List> bytesList = [];
     for (final assetPath in assets) {
       final byteData = await rootBundle.load(assetPath);
       bytesList.add(byteData.buffer.asUint8List());
@@ -145,11 +146,6 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
   void _pickAndCropImage() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 10 * 1024 * 1024) {
-        _snackbar('File size exceeds 10MB.');
-        return;
-      }
-
       final pickedFilePath = result.files.single.path!;
 
       final croppedFile = await ImageCropper().cropImage(
@@ -170,6 +166,8 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
         setState(() {
           bytes = croppedBytes;
           selectedDefaultCoverIndex = null;
+          selectedFile = File(croppedFile.path);
+          imageName = result.files.single.name;
         });
         if (mounted) {
           context.pop();
@@ -208,7 +206,10 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
 
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = "cover_$timestamp.jpg";
+      final fileName =
+          selectedDefaultCoverIndex != null
+              ? "${timestamp}_${defaultCovers[selectedDefaultCoverIndex!].split("/")[1]}.jpg"
+              : "${timestamp}_$imageName";
 
       Uint8List imageToUpload;
       if (bytes != null) {
@@ -246,6 +247,8 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
   Widget build(BuildContext context) {
     final profile = ref.watch(userProfileProvider);
     return AppScaffold(
+      resizeToAvoidBottomInset: true,
+      actions: [],
       title: "New Novel",
       body: SafeArea(
         child: Padding(
@@ -295,6 +298,7 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Description',
                     border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black, width: 2.0),
                     ),

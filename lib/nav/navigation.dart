@@ -1,10 +1,12 @@
 import 'package:go_router/go_router.dart';
+import 'package:mob_novelapp/ui/addChapter/add_chapter_screen.dart';
 import 'package:mob_novelapp/ui/addNovel/add_novel_screen.dart';
 import 'package:mob_novelapp/ui/authGate/auth_gate.dart';
 import 'package:mob_novelapp/ui/detailNovel/details_novel.dart';
 import 'package:mob_novelapp/ui/editNovel/edit_novel_screen.dart';
 import 'package:mob_novelapp/ui/home/home_screen.dart';
 import 'package:mob_novelapp/ui/login/login_screen.dart';
+import 'package:mob_novelapp/ui/search/searching_screen.dart';
 
 class Navigation {
   static const initial = "/authGate";
@@ -27,6 +29,11 @@ class Navigation {
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
+        path: "/search",
+        name: Screen.searching.name,
+        builder: (context, state) => const SearchingScreen(),
+      ),
+      GoRoute(
         path: "/addNovel",
         name: Screen.addNovel.name,
         builder: (context, state) => const AddNovelScreen(),
@@ -45,6 +52,22 @@ class Navigation {
             (context, state) =>
                 EditNovelScreen(id: state.pathParameters["id"]!),
       ),
+      GoRoute(
+        path: "/addChapter/:novelId",
+        name: Screen.addChapter.name,
+        builder:
+            (context, state) =>
+                AddChapterScreen(novelId: state.pathParameters["novelId"]!),
+      ),
+      // GoRoute(
+      //   path: "/reading/:novelId/:id",
+      //   name: Screen.readingChapter.name,
+      //   builder:
+      //       (context, state) => AddChapterScreen(
+      //         novelId: state.pathParameters["novelId"]!,
+      //         id: state.pathParameters["id"]!,
+      //       ),
+      // ),
     ],
   );
 }
@@ -55,6 +78,7 @@ enum Screen {
   addNovel,
   updateNovel,
   addChapter,
+  searching,
   updateChapter,
   detailNovel,
   readingChapter,

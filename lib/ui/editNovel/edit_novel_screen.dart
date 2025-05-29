@@ -32,6 +32,7 @@ class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
   List<String> defaultCovers = [];
   int? selectedDefaultCoverIndex;
   File? selectedFile;
+  String? imageName;
   Uint8List? bytes;
   bool isLoading = false;
 
@@ -162,11 +163,6 @@ class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
   void _pickAndCropImage() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 10 * 1024 * 1024) {
-        _snackbar('File size exceeds 10MB.');
-        return;
-      }
-
       final pickedFilePath = result.files.single.path!;
 
       final croppedFile = await ImageCropper().cropImage(
@@ -187,6 +183,8 @@ class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
         setState(() {
           bytes = croppedBytes;
           selectedDefaultCoverIndex = null;
+          selectedFile = File(croppedFile.path);
+          imageName = result.files.single.name;
         });
         if (mounted) {
           context.pop();
@@ -232,7 +230,10 @@ class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
         await storageService.deleteImage(novel!.cover);
 
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        newCoverName = "cover_$timestamp.jpg";
+        newCoverName =
+            bytes != null
+                ? "${timestamp}_$imageName"
+                : "${timestamp}_${defaultCovers[selectedDefaultCoverIndex!].split("/")[1]}";
 
         Uint8List imageToUpload =
             bytes ?? defaultCoverBytesList[selectedDefaultCoverIndex!];
@@ -265,6 +266,8 @@ class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      resizeToAvoidBottomInset: true,
+      actions: [],
       title: "Edit Novel",
       body: SafeArea(
         child: Padding(
@@ -315,6 +318,7 @@ class _EditNovelScreenState extends ConsumerState<EditNovelScreen> {
                   textAlign: TextAlign.start,
                   decoration: const InputDecoration(
                     labelText: 'Description',
+                    alignLabelWithHint: true,
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black, width: 2.0),

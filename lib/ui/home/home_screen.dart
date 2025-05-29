@@ -35,13 +35,28 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _navigateToNovel(String? id) {
-    context.pushNamed(Screen.detailNovel.name, pathParameters: {"id": id!});
+  void _navigateToNovel(String? id) async {
+    final res = await context.pushNamed(
+      Screen.detailNovel.name,
+      pathParameters: {"id": id!},
+    );
+    if (res == true) {
+      _refresh();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
+      resizeToAvoidBottomInset: true,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            // context.pushNamed('search');
+          },
+        ),
+      ],
       title: 'Home',
       body: SafeArea(
         child: Column(

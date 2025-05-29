@@ -6,14 +6,18 @@ import 'package:mob_novelapp/providers/auth_provider.dart';
 
 class AppScaffold extends ConsumerWidget {
   final Widget body;
-  final String title;
+  final String? title;
   final Widget? floatingActionButton;
+  final bool resizeToAvoidBottomInset;
+  final List<Widget> actions;
 
   const AppScaffold({
     super.key,
     required this.body,
-    required this.title,
+    this.title,
     this.floatingActionButton,
+    required this.resizeToAvoidBottomInset,
+    required this.actions,
   });
 
   @override
@@ -29,9 +33,10 @@ class AppScaffold extends ConsumerWidget {
     final isHome = currentRouteName == Screen.home.name;
 
     return Scaffold(
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
+        title: Text(title ?? "", style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         leading:
@@ -45,17 +50,9 @@ class AppScaffold extends ConsumerWidget {
                 )
                 : IconButton(
                   icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.pop(true),
                 ),
-        actions: [
-          if (isHome)
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                // context.pushNamed('search');
-              },
-            ),
-        ],
+        actions: actions,
       ),
       drawer:
           isHome
@@ -85,6 +82,14 @@ class AppScaffold extends ConsumerWidget {
                         textAlign: TextAlign.center,
                       ),
                       onTap: () => navigateTo(Screen.home.name),
+                    ),
+                    ListTile(
+                      title: const Text(
+                        'Rank',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                      // onTap: () => navigateTo(Screen.rank.name),
                     ),
                   ],
                 ),

@@ -64,16 +64,21 @@ class NovelItemState extends State<NovelItem> {
 
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                widget.novel.title.length > 15
-                    ? '${widget.novel.title.substring(0, 15)}...'
-                    : widget.novel.title,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Column(
+                children: [
+                  Text(
+                    widget.novel.title.length > 15
+                        ? '${widget.novel.title.substring(0, 15)}...'
+                        : widget.novel.title,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(widget.novel.author),
+                ],
               ),
             ),
           ],

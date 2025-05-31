@@ -16,7 +16,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final repo = NovelRepoSupabase();
-  final storageService = StorageService();
   var novels = <Novel>[];
   bool isLoading = true;
 
@@ -53,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: () {
-            // context.pushNamed('search');
+            context.pushNamed(Screen.searching.name);
           },
         ),
       ],
@@ -77,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return GridView.count(
                       padding: const EdgeInsets.all(8),
                       crossAxisCount: 2,
-                      childAspectRatio: 0.56,
+                      childAspectRatio: 0.52,
                       children:
                           novels
                               .map(

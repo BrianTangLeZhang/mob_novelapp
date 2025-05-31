@@ -29,6 +29,15 @@ class NovelRepoSupabase {
     return res.map((data) => Novel.fromMap(data)).toList();
   }
 
+  Future<List<Novel>> getAllNovelsByKeyword(String keyword) async {
+    final res = await supabase
+        .from('novels')
+        .select()
+        .or('title.ilike.%$keyword%,author.ilike.%$keyword%');
+
+    return (res as List).map((data) => Novel.fromMap(data)).toList();
+  }
+
   Future<void> updateNovel(Novel novel) async {
     await supabase.from("novels").update(novel.toMap()).eq('id', novel.id!);
   }

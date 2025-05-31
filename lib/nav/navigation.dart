@@ -63,7 +63,7 @@ class Navigation {
       //   path: "/reading/:novelId/:id",
       //   name: Screen.readingChapter.name,
       //   builder:
-      //       (context, state) => AddChapterScreen(
+      //       (context, state) => SearchingScreen(
       //         novelId: state.pathParameters["novelId"]!,
       //         id: state.pathParameters["id"]!,
       //       ),

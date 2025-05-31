@@ -44,7 +44,11 @@ class ChapterRepoSupabase {
         .eq('id', chapter.id!);
   }
 
-  Future<void> deleteChapter(int id) async {
-    await supabase.from("chapters").delete().eq('id', id);
+  Future<void> deleteChapter(String novelId, int id) async {
+    await supabase
+        .from("chapters")
+        .delete()
+        .eq("novel_id", novelId)
+        .eq('id', id);
   }
 }

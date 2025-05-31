@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mob_novelapp/data/model/novel.dart';
 import 'package:mob_novelapp/data/repo/novel_repo.dart';
 import 'package:mob_novelapp/nav/navigation.dart';
-import 'package:mob_novelapp/service/storage_service.dart';
 import 'package:mob_novelapp/ui/drawer/drawer.dart';
 import 'package:mob_novelapp/ui/home/novelItem.dart';
 

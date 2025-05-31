@@ -229,11 +229,12 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                               )
                               : ListView.separated(
                                 itemCount: chapters.length,
-                                separatorBuilder: (_, __) => const Divider(),
+                                separatorBuilder:
+                                    (context, index) => SizedBox(height: 3),
                                 itemBuilder: (context, index) {
                                   final chapter = chapters[index];
                                   return Container(
-                                    color: Colors.amber[50],
+                                    color: Colors.cyan[100],
                                     child: ListTile(
                                       title: Text(chapter!.title),
                                       onTap: () {
@@ -257,9 +258,7 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                                           () => context.pop(
                                                             false,
                                                           ),
-                                                      child: const Text(
-                                                        "Cancel",
-                                                      ),
+                                                      child: const Text("Edit"),
                                                     ),
                                                     TextButton(
                                                       onPressed:
@@ -267,11 +266,22 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                                               context.pop(true),
                                                       child: const Text(
                                                         "Delete",
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                           );
+                                          if (res == true) {
+                                            await chapterRepo.deleteChapter(
+                                              chapter.novel_id,
+                                              chapter.id!,
+                                            );
+                                            _loadChapters();
+                                            _snackbar("Chapter deleted");
+                                          }
                                         }
                                       },
                                     ),

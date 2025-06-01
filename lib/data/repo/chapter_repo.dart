@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:mob_novelapp/data/model/chapter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

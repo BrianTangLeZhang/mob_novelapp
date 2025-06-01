@@ -37,7 +37,9 @@ class AppScaffold extends ConsumerWidget {
       if (await GoogleSignIn().isSignedIn()) {
         await GoogleSignIn().disconnect();
       }
-      context.pushNamed(Screen.login.name);
+      ref.invalidate(userProfileProvider);
+      ref.invalidate(authUserProvider);
+      context.pushNamed(Screen.authGate.name);
     }
 
     final currentRouteName = ModalRoute.of(context)?.settings.name;

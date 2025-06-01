@@ -102,15 +102,12 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                   child: const Text("Cancel"),
                 ),
-                ElevatedButton(
+                TextButton(
                   onPressed: () {
-                    Navigator.pop(context, {
-                      'order': selectedOrder,
-                      'asc': selectedAsc,
-                    });
+                    context.pop({'order': selectedOrder, 'asc': selectedAsc});
                   },
                   child: const Text("Apply"),
                 ),

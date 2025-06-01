@@ -189,7 +189,10 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                         ),
                                         TextButton(
                                           onPressed: () => context.pop(true),
-                                          child: const Text("Delete"),
+                                          child: const Text(
+                                            "Delete",
+                                            style: TextStyle(color: Colors.red),
+                                          ),
                                         ),
                                       ],
                                     ),

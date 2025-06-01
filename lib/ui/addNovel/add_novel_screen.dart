@@ -245,7 +245,7 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(userProfileProvider);
+    final currentUser = ref.watch(userProfileProvider);
     return AppScaffold(
       resizeToAvoidBottomInset: true,
       actions: [],
@@ -320,7 +320,10 @@ class _AddNovelScreenState extends ConsumerState<AddNovelScreen> {
                 Center(
                   child: MaterialButton(
                     onPressed:
-                        () => _submit(profile!["id"], profile["username"]),
+                        () => _submit(
+                          currentUser!["id"],
+                          currentUser["username"],
+                        ),
                     color: Colors.black,
                     child: const Text(
                       'Add',

@@ -60,15 +60,22 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
     });
   }
 
+  void _deleteChapter(Chapter chapter) async {
+    chapter.images!.map((img) async {
+      await storageService.deleteImage(img);
+    });
+    await chapterRepo.deleteChapter(chapter.novel_id, chapter.id!);
+  }
+
   void _snackbar(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.read(userProfileProvider);
+    final currentUser = ref.read(userProfileProvider);
     final isAuthorOrAdmin =
-        profile!["role"] == "Admin" || novel?.user_id == profile["id"];
+        currentUser!["role"] == "Admin" || novel?.user_id == currentUser["id"];
     return AppScaffold(
       resizeToAvoidBottomInset: false,
       actions: [],
@@ -142,7 +149,7 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
 
                     const SizedBox(height: 16),
 
-                    if (novel!.user_id == profile["id"]) ...[
+                    if (novel!.user_id == currentUser["id"]) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -234,11 +241,17 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                 itemBuilder: (context, index) {
                                   final chapter = chapters[index];
                                   return Container(
-                                    color: Colors.cyan[100],
+                                    color: Colors.amber[50],
                                     child: ListTile(
                                       title: Text(chapter!.title),
                                       onTap: () {
-                                        // TODO: Navigate to chapter details
+                                        context.pushNamed(
+                                          Screen.readingChapter.name,
+                                          pathParameters: {
+                                            "novelId": novel!.id!,
+                                            "index": chapter.index.toString(),
+                                          },
+                                        );
                                       },
                                       onLongPress: () async {
                                         if (isAuthorOrAdmin) {
@@ -255,8 +268,17 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                                   actions: [
                                                     TextButton(
                                                       onPressed:
-                                                          () => context.pop(
-                                                            false,
+                                                          () => context.pushNamed(
+                                                            Screen
+                                                                .updateChapter
+                                                                .name,
+                                                            pathParameters: {
+                                                              "novelId":
+                                                                  novel!.id!,
+                                                              "index":
+                                                                  chapter.index
+                                                                      .toString(),
+                                                            },
                                                           ),
                                                       child: const Text("Edit"),
                                                     ),
@@ -275,10 +297,7 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                                 ),
                                           );
                                           if (res == true) {
-                                            await chapterRepo.deleteChapter(
-                                              chapter.novel_id,
-                                              chapter.id!,
-                                            );
+                                            _deleteChapter(chapter);
                                             _loadChapters();
                                             _snackbar("Chapter deleted");
                                           }

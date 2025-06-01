@@ -18,6 +18,8 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
   final repo = NovelRepoSupabase();
   final _keywordController = TextEditingController();
   var novels = <Novel>[];
+  String order = "id";
+  bool asc = true;
   bool isLoading = true;
 
   @override
@@ -29,7 +31,11 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
 
   void _showResult() async {
     setState(() => isLoading = true);
-    final res = await repo.getAllNovelsByKeyword(_keywordController.text);
+    final res = await repo.getAllNovelsByKeyword(
+      _keywordController.text,
+      order,
+      asc,
+    );
     setState(() {
       novels = res;
       isLoading = false;
@@ -46,6 +52,84 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
     }
   }
 
+  void _showSortDialog() async {
+    final sortFields = {"Latest (ID)": "id", "Most Chapters": "chapter_count"};
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) {
+        String selectedOrder = order;
+        bool selectedAsc = asc;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Sort Options"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedOrder,
+                    items:
+                        sortFields.entries
+                            .map(
+                              (entry) => DropdownMenuItem<String>(
+                                value: entry.value,
+                                child: Text(entry.key),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => selectedOrder = value);
+                      }
+                    },
+                    decoration: const InputDecoration(labelText: "Sort by"),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Text("Ascending"),
+                      Switch(
+                        value: selectedAsc,
+                        onChanged: (val) {
+                          setState(() => selectedAsc = val);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, {
+                      'order': selectedOrder,
+                      'asc': selectedAsc,
+                    });
+                  },
+                  child: const Text("Apply"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        order = result['order'];
+        asc = result['asc'];
+      });
+      _showResult();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -56,7 +140,7 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
           child: Padding(
             padding: const EdgeInsets.all(4.0),
             child: SizedBox(
-              width: 340,
+              width: 300,
               child: TextField(
                 controller: _keywordController,
                 decoration: const InputDecoration(
@@ -71,7 +155,7 @@ class _SearchingScreenState extends ConsumerState<SearchingScreen> {
             ),
           ),
         ),
-        SizedBox(width: 10),
+        IconButton(icon: const Icon(Icons.sort), onPressed: _showSortDialog),
       ],
       body: SafeArea(
         child: Column(

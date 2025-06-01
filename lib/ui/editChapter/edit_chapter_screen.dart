@@ -10,22 +10,57 @@ import 'package:mob_novelapp/data/repo/chapter_repo.dart';
 import 'package:mob_novelapp/service/storage_service.dart';
 import 'package:mob_novelapp/ui/drawer/drawer.dart';
 
-class AddChapterScreen extends ConsumerStatefulWidget {
+class EditChapterScreen extends ConsumerStatefulWidget {
+  const EditChapterScreen({
+    super.key,
+    required this.novelId,
+    required this.index,
+  });
   final String novelId;
-  const AddChapterScreen({super.key, required this.novelId});
+  final int index;
 
   @override
-  ConsumerState<AddChapterScreen> createState() => _AddChapterScreenState();
+  ConsumerState<EditChapterScreen> createState() => _EditChapterScreenState();
 }
 
-class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
+class _EditChapterScreenState extends ConsumerState<EditChapterScreen> {
+  final repo = ChapterRepoSupabase();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
   final storageService = StorageService();
+  Chapter? chapter;
   final List<File> _imageFiles = [];
   final List<Uint8List> bytesList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChapter();
+  }
+
+  void _loadChapter() async {
+    final res = await repo.getChapter(widget.novelId, widget.index);
+    if (!mounted || res == null) return;
+
+    _titleController.text = res.title;
+    _contentController.text = res.content;
+
+    if (res.images != null && res.images!.isNotEmpty) {
+      final loadedBytes = await Future.wait(
+        res.images!.map((img) => storageService.getImage(img)),
+      );
+
+      if (mounted) {
+        setState(() {
+          chapter = res;
+            _imageFiles.addAll(res.images!.map((img) => File(img)));
+          bytesList.addAll(loadedBytes.whereType<Uint8List>());
+        });
+      }
+    }
+  }
 
   void _pickImage() async {
     final files = await _imagePicker.pickMultiImage();
@@ -35,11 +70,9 @@ class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
           final imageFile = File(file.path);
           _imageFiles.add(imageFile);
           file.readAsBytes().then((bytes) {
-            if (mounted) {
-              setState(() {
-                bytesList.add(bytes);
-              });
-            }
+            setState(() {
+              bytesList.add(bytes);
+            });
           });
         }
       });
@@ -54,7 +87,6 @@ class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
   }
 
   void _saveChapter() async {
-    final chapterRepo = ChapterRepoSupabase();
     final title = _titleController.text.trim();
     final content = _contentController.text;
 
@@ -69,38 +101,41 @@ class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
     }
 
     try {
-      final chapters = await chapterRepo.getChapterByNovelId(widget.novelId);
-      final index = chapters.length;
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-
-      final List<String> selectedImages = [];
-
-      if (_imageFiles.isNotEmpty) {
-        for (int i = 0; i < _imageFiles.length; i++) {
-          selectedImages.add("img_${widget.novelId}$index${i}_$timestamp.jpg");
-        }
-
-        for (int i = 0; i < selectedImages.length; i++) {
-          await storageService.uploadImage(selectedImages[i], bytesList[i]);
+      if (chapter != null &&
+          chapter!.images != null &&
+          chapter!.images!.isNotEmpty) {
+        for (final image in chapter!.images!) {
+          await storageService.deleteImage(image);
         }
       }
 
-      final chapter = Chapter(
+      final List<String> selectedImages = [];
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      for (int i = 0; i < bytesList.length; i++) {
+        final imageName =
+            "img_${widget.novelId}${widget.index}${i}_$timestamp.jpg";
+        selectedImages.add(imageName);
+        await storageService.uploadImage(imageName, bytesList[i]);
+      }
+
+      final updatedChapter = Chapter(
         novel_id: widget.novelId,
-        index: index,
+        index: widget.index,
         title: title,
         content: content,
         images: selectedImages,
       );
 
-      await chapterRepo.addChapter(chapter);
+      await repo.updateChapter(updatedChapter);
+
       if (mounted) {
-        _showSnackBar('Chapter added successfully');
+        _showSnackBar('Chapter updated successfully');
         context.pop(true);
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar('Failed to add chapter: $e');
+        _showSnackBar('Failed to update chapter: $e');
       }
     }
   }

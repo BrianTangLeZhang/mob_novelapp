@@ -14,13 +14,18 @@ class ChapterRepoSupabase {
   final supabase = Supabase.instance.client;
 
   Future<void> addChapter(Chapter chapter) async {
-    debugPrint(chapter.toMap().toString());
     await supabase.from('chapters').insert(chapter.toMap());
   }
 
-  Future<Chapter?> getChapterById(int id) async {
-    final res = await supabase.from("chapters").select().eq('id', id).single();
-    return Chapter.fromMap(res);
+  Future<Chapter?> getChapter(String novelId, int index) async {
+    final res =
+        await supabase
+            .from("chapters")
+            .select()
+            .eq("novel_id", novelId)
+            .eq("index", index)
+            .maybeSingle();
+    return Chapter.fromMap(res!);
   }
 
   Future<List<Chapter?>> getChapterByNovelId(String id) async {
@@ -41,7 +46,8 @@ class ChapterRepoSupabase {
     await supabase
         .from("chapters")
         .update(chapter.toMap())
-        .eq('id', chapter.id!);
+        .eq('novel_id', chapter.novel_id)
+        .eq('index', chapter.index);
   }
 
   Future<void> deleteChapter(String novelId, int id) async {

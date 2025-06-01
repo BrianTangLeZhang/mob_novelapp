@@ -9,9 +9,9 @@ class AuthGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authUserProvider);
+    final currentUser = ref.watch(userProfileProvider);
 
-    if (user != null) {
+    if (currentUser != null) {
       Future.microtask(() => context.pushReplacementNamed(Screen.home.name));
     } else {
       Future.microtask(() => context.pushReplacementNamed(Screen.login.name));

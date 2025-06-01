@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mob_novelapp/nav/navigation.dart';
 import 'package:mob_novelapp/providers/auth_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AppScaffold extends ConsumerWidget {
+  static final supabase = Supabase.instance.client;
   final Widget body;
   final String? title;
   final Widget? floatingActionButton;
@@ -27,6 +30,14 @@ class AppScaffold extends ConsumerWidget {
     void navigateTo(String page) {
       context.pop();
       context.pushNamed(page);
+    }
+
+    void logout() async {
+      await supabase.auth.signOut();
+      if (await GoogleSignIn().isSignedIn()) {
+        await GoogleSignIn().disconnect();
+      }
+      context.pushNamed(Screen.login.name);
     }
 
     final currentRouteName = ModalRoute.of(context)?.settings.name;
@@ -83,14 +94,16 @@ class AppScaffold extends ConsumerWidget {
                       ),
                       onTap: () => navigateTo(Screen.home.name),
                     ),
-                    ListTile(
-                      title: const Text(
-                        'Rank',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
-                      // onTap: () => navigateTo(Screen.rank.name),
-                    ),
+                    profile != null
+                        ? ListTile(
+                          title: const Text(
+                            'Logout',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                          onTap: logout,
+                        )
+                        : SizedBox(),
                   ],
                 ),
               )

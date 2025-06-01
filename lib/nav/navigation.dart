@@ -3,9 +3,11 @@ import 'package:mob_novelapp/ui/addChapter/add_chapter_screen.dart';
 import 'package:mob_novelapp/ui/addNovel/add_novel_screen.dart';
 import 'package:mob_novelapp/ui/authGate/auth_gate.dart';
 import 'package:mob_novelapp/ui/detailNovel/details_novel.dart';
+import 'package:mob_novelapp/ui/editChapter/edit_chapter_screen.dart';
 import 'package:mob_novelapp/ui/editNovel/edit_novel_screen.dart';
 import 'package:mob_novelapp/ui/home/home_screen.dart';
 import 'package:mob_novelapp/ui/login/login_screen.dart';
+import 'package:mob_novelapp/ui/reading/reading_screen.dart';
 import 'package:mob_novelapp/ui/search/searching_screen.dart';
 
 class Navigation {
@@ -59,15 +61,24 @@ class Navigation {
             (context, state) =>
                 AddChapterScreen(novelId: state.pathParameters["novelId"]!),
       ),
-      // GoRoute(
-      //   path: "/reading/:novelId/:id",
-      //   name: Screen.readingChapter.name,
-      //   builder:
-      //       (context, state) => SearchingScreen(
-      //         novelId: state.pathParameters["novelId"]!,
-      //         id: state.pathParameters["id"]!,
-      //       ),
-      // ),
+      GoRoute(
+        path: "/editChapter/:novelId/:index",
+        name: Screen.updateChapter.name,
+        builder:
+            (context, state) => EditChapterScreen(
+              novelId: state.pathParameters["novelId"]!,
+              index: int.parse(state.pathParameters["index"]!), // 转换成 int
+            ),
+      ),
+      GoRoute(
+        path: "/reading/:novelId/:index",
+        name: Screen.readingChapter.name,
+        builder:
+            (context, state) => ReadingScreen(
+              novelId: state.pathParameters["novelId"]!,
+              index: int.parse(state.pathParameters["index"]!), // 转换成 int
+            ),
+      ),
     ],
   );
 }

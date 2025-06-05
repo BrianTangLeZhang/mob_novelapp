@@ -67,7 +67,7 @@ class Navigation {
         builder:
             (context, state) => EditChapterScreen(
               novelId: state.pathParameters["novelId"]!,
-              index: int.parse(state.pathParameters["index"]!), // 转换成 int
+              index: int.parse(state.pathParameters["index"]!),
             ),
       ),
       GoRoute(
@@ -76,7 +76,7 @@ class Navigation {
         builder:
             (context, state) => ReadingScreen(
               novelId: state.pathParameters["novelId"]!,
-              index: int.parse(state.pathParameters["index"]!), // 转换成 int
+              index: int.parse(state.pathParameters["index"]!),
             ),
       ),
     ],

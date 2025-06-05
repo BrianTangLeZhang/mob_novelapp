@@ -90,13 +90,8 @@ class _EditChapterScreenState extends ConsumerState<EditChapterScreen> {
     final title = _titleController.text.trim();
     final content = _contentController.text;
 
-    if (title.isEmpty) {
-      _showSnackBar('Title should not be empty');
-      return;
-    }
-
-    if (content.isEmpty) {
-      _showSnackBar('Content should not be empty');
+    if (title.isEmpty || content.isEmpty) {
+      _showSnackBar("Please fill in all fields.");
       return;
     }
 

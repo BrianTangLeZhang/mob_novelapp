@@ -74,14 +74,14 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.read(userProfileProvider);
-    final isAuthorOrAdmin =
-        currentUser!["role"] == "Admin" || novel?.user_id == currentUser["id"];
+    final isAuthor = novel?.user_id == currentUser!["id"];
+    final isAdmin = currentUser["role"] == "Admin";
     return AppScaffold(
       resizeToAvoidBottomInset: false,
       actions: [],
       title: novel?.title ?? "Novel Details",
       floatingActionButton:
-          isAuthorOrAdmin
+          isAuthor
               ? FloatingActionButton(
                 onPressed: () async {
                   final res = await context.pushNamed(
@@ -149,10 +149,10 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
 
                     const SizedBox(height: 16),
 
-                    if (novel!.user_id == currentUser["id"]) ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (isAuthor)
                           FloatingActionButton(
                             backgroundColor: Colors.black,
                             child: const Icon(Icons.edit, color: Colors.white),
@@ -166,7 +166,9 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                               }
                             },
                           ),
-                          const SizedBox(width: 8),
+                        const SizedBox(width: 8),
+
+                        if (isAdmin)
                           FloatingActionButton(
                             backgroundColor: Colors.red,
                             child: const Icon(
@@ -206,9 +208,8 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                               }
                             },
                           ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
 
                     const SizedBox(height: 16),
 

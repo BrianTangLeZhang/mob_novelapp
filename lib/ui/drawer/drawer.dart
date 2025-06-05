@@ -37,9 +37,15 @@ class AppScaffold extends ConsumerWidget {
       if (await GoogleSignIn().isSignedIn()) {
         await GoogleSignIn().disconnect();
       }
+    }
+
+    bool clearProvider() {
       ref.invalidate(userProfileProvider);
       ref.invalidate(authUserProvider);
-      context.pushNamed(Screen.authGate.name);
+      if (ref.watch(userProfileProvider) != null) {
+        clearProvider();
+      }
+      return true;
     }
 
     final currentRouteName = ModalRoute.of(context)?.settings.name;
@@ -103,7 +109,13 @@ class AppScaffold extends ConsumerWidget {
                             style: TextStyle(fontSize: 16, color: Colors.white),
                             textAlign: TextAlign.center,
                           ),
-                          onTap: logout,
+                          onTap: () {
+                            logout();
+                            final res = clearProvider();
+                            if (res == true) {
+                              context.pushReplacementNamed(Screen.authGate.name);
+                            }
+                          },
                         )
                         : SizedBox(),
                   ],

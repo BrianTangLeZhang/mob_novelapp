@@ -58,16 +58,11 @@ class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
     final title = _titleController.text.trim();
     final content = _contentController.text;
 
-    if (title.isEmpty) {
-      _showSnackBar('Title should not be empty');
+    if (title.isEmpty || content.isEmpty) {
+      _showSnackBar("Please fill in all fields.");
       return;
     }
-
-    if (content.isEmpty) {
-      _showSnackBar('Content should not be empty');
-      return;
-    }
-
+    
     try {
       final chapters = await chapterRepo.getChapterByNovelId(widget.novelId);
       final index = chapters.length;

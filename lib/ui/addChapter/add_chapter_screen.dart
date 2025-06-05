@@ -30,19 +30,17 @@ class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
   void _pickImage() async {
     final files = await _imagePicker.pickMultiImage();
     if (files.isNotEmpty && mounted) {
-      setState(() {
-        for (var file in files) {
-          final imageFile = File(file.path);
-          _imageFiles.add(imageFile);
-          file.readAsBytes().then((bytes) {
-            if (mounted) {
-              setState(() {
-                bytesList.add(bytes);
-              });
-            }
-          });
-        }
-      });
+      for (var file in files) {
+        final imageFile = File(file.path);
+        _imageFiles.add(imageFile);
+        file.readAsBytes().then((bytes) {
+          if (mounted) {
+            setState(() {
+              bytesList.add(bytes);
+            });
+          }
+        });
+      }
     }
   }
 
@@ -62,7 +60,7 @@ class _AddChapterScreenState extends ConsumerState<AddChapterScreen> {
       _showSnackBar("Please fill in all fields.");
       return;
     }
-    
+
     try {
       final chapters = await chapterRepo.getChapterByNovelId(widget.novelId);
       final index = chapters.length;

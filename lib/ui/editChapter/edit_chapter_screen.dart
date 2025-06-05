@@ -55,7 +55,7 @@ class _EditChapterScreenState extends ConsumerState<EditChapterScreen> {
       if (mounted) {
         setState(() {
           chapter = res;
-            _imageFiles.addAll(res.images!.map((img) => File(img)));
+          _imageFiles.addAll(res.images!.map((img) => File(img)));
           bytesList.addAll(loadedBytes.whereType<Uint8List>());
         });
       }
@@ -65,17 +65,15 @@ class _EditChapterScreenState extends ConsumerState<EditChapterScreen> {
   void _pickImage() async {
     final files = await _imagePicker.pickMultiImage();
     if (files.isNotEmpty && mounted) {
-      setState(() {
-        for (var file in files) {
-          final imageFile = File(file.path);
-          _imageFiles.add(imageFile);
-          file.readAsBytes().then((bytes) {
-            setState(() {
-              bytesList.add(bytes);
-            });
+      for (var file in files) {
+        final imageFile = File(file.path);
+        _imageFiles.add(imageFile);
+        file.readAsBytes().then((bytes) {
+          setState(() {
+            bytesList.add(bytes);
           });
-        }
-      });
+        });
+      }
     }
   }
 

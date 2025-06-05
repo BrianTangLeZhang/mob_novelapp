@@ -30,41 +30,41 @@ class NovelRepoSupabase {
   }
 
   Future<List<Novel>> getAllNovelsByKeyword(
-  String keyword,
-  String order,
-  bool asc,
-) async {
-  final res = await supabase
-      .rpc('get_novels_with_chapter_count')
-      .select();
+    String keyword,
+    String order,
+    bool asc,
+  ) async {
+    final res = await supabase.rpc('get_novels_with_chapter_count').select();
 
-   final List<dynamic> data = res;
+    final List<dynamic> data = res;
 
-  final filtered = data.where((item) {
-    final title = item['title']?.toString().toLowerCase() ?? '';
-    final author = item['author']?.toString().toLowerCase() ?? '';
-    final kw = keyword.toLowerCase();
-    return title.contains(kw) || author.contains(kw);
-  }).toList();
+    final filtered =
+        data.where((item) {
+          final title = item['title']?.toString().toLowerCase() ?? '';
+          final author = item['author']?.toString().toLowerCase() ?? '';
+          final kw = keyword.toLowerCase();
+          return title.contains(kw) || author.contains(kw);
+        }).toList();
 
-  filtered.sort((a, b) {
-    int comparison;
-    if (order == "id") {
-      comparison = (a['id'] ?? '').compareTo(b['id'] ?? '');
-    } else {
-      comparison =
-          (a['chapter_count'] as int).compareTo(b['chapter_count'] as int);
-    }
-    return asc ? comparison : -comparison;
-  });
-
-  return filtered.map((data) {
-    return Novel.fromMap({
-      ...data,
-      'chapter_count': data['chapter_count'] ?? 0,
+    filtered.sort((a, b) {
+      int comparison;
+      if (order == "id") {
+        comparison = (a['id'] ?? '').compareTo(b['id'] ?? '');
+      } else {
+        comparison = (a['chapter_count'] as int).compareTo(
+          b['chapter_count'] as int,
+        );
+      }
+      return asc ? comparison : -comparison;
     });
-  }).toList();
-}
+
+    return filtered.map((data) {
+      return Novel.fromMap({
+        ...data,
+        'chapter_count': data['chapter_count'] ?? 0,
+      });
+    }).toList();
+  }
 
   Future<void> updateNovel(Novel novel) async {
     await supabase.from("novels").update(novel.toMap()).eq('id', novel.id!);

@@ -258,7 +258,7 @@ class _DetailsNovelScreenState extends ConsumerState<DetailsNovelScreen> {
                                         );
                                       },
                                       onLongPress: () async {
-                                        if (isAuthorOrAdmin) {
+                                        if (isAuthor) {
                                           final res = await showDialog<bool>(
                                             context: context,
                                             builder:
